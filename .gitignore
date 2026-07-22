@@ -1,0 +1,12 @@
+# §11.4.30 — no build artifacts / caches / temp / secrets in version control.
+*.tmp
+*.swp
+*~
+.DS_Store
+/bin/
+/dist/
+*.db-wal
+*.db-shm
+.env
+.env.*
+!.env.example

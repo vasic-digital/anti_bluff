@@ -1,0 +1,22 @@
+# anti_bluff — submodule dependency manifest (§11.4.31)
+#
+# anti_bluff is a leaf reusable engine: it has ZERO own-org Git dependencies and
+# ZERO third-party dependencies (bash + sqlite3 host tools only in this slice;
+# Go stdlib enters with the OWED fuzz-corpus-replay slice). It is inherited BY
+# REFERENCE as a depth-1 submodule under the constitution submodule per the
+# §11.4.28(C) carve-out (constitution/submodules/anti_bluff/), and nests no
+# further own-org submodules.
+schema_version: 1
+name: anti_bluff
+ssh_url: git@github.com:vasic-digital/anti_bluff.git
+mirrors:
+  - git@github.com:vasic-digital/anti_bluff.git
+  - git@gitlab.com:vasic-digital/anti_bluff.git
+language: bash
+language_specific_subtree: false
+deps: []                       # zero own-org deps (leaf engine)
+transitive_handling:
+  recursive: true
+  conflict_resolution: operator-required
+project_agnostic: true         # §11.4.28(B)/§11.4.177 — carries no project literals
+carve_out: "§11.4.28(C) depth-1 reusable engine under constitution/submodules/"

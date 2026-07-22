@@ -1,0 +1,30 @@
+==============================================
+SUITE: test_needle.sh
+==============================================
+FAIL: missing artifact lib/needle.sh
+RESULT: RED (implementation absent)
+SUITE-RESULT: test_needle.sh RED
+==============================================
+SUITE: test_status_custody.sh
+==============================================
+FAIL: missing artifact seams/status_custody/custody_schema.sql
+FAIL: missing artifact seams/status_custody/custody_triggers.sql
+FAIL: missing artifact seams/status_custody/custody_sweep.sh
+FAIL: missing artifact seams/status_custody/apply_custody.sh
+RESULT: RED (4 missing artifacts)
+SUITE-RESULT: test_status_custody.sh RED
+==============================================
+SUITE: test_evidence_class.sh
+==============================================
+FAIL: missing artifact seams/evidence_class/evidence_class_check.sh
+RESULT: RED (implementation absent)
+SUITE-RESULT: test_evidence_class.sh RED
+==============================================
+SUITE: test_out_of_box.sh
+==============================================
+FAIL: repository has no commits yet — out-of-box cannot be proven on an uncommitted tree
+RESULT: RED
+SUITE-RESULT: test_out_of_box.sh RED
+==============================================
+SUITES: total=4 red=4
+exit=1
