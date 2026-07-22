@@ -8,8 +8,12 @@
 # Contract under test (lib/needle.sh):
 #   nq_absent <file> <query-ere> <needle-ere>
 #     0 CERTIFIED-ABSENT | 1 PRESENT (+ sample lines) | 2 INSTRUMENT-BLIND | 3 NEEDLE-CLASS-MISMATCH
-#   nq_stream_contains <producer...> -- <ere>
-#     0 present | 1 absent | 2 blind — consumer reads producer to EOF (SIGPIPE-immune)
+#   nq_stream_contains <producer...> -- <query-ere> <needle-ere>
+#     0 PRESENT | 1 CERTIFIED-ABSENT (needle sighted) | 2 INSTRUMENT-BLIND |
+#     3 NEEDLE-CLASS-MISMATCH — consumer reads producer to EOF (SIGPIPE-immune),
+#     and an absence verdict is returned ONLY after a known-present needle proves
+#     the instrument sees through the SAME path (§11.4.201(7)(b) — this is the
+#     needle library itself; a needle-less absence here would be load-bearing irony)
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB="$HERE/../lib/needle.sh"
@@ -108,24 +112,52 @@ raw_rc=0
 cat "$T/bigstream.txt" | grep -q 'THE_TOKEN_ON_LINE_ONE' || raw_rc=$?
 set +o pipefail
 echo "INFO: raw 'cat | grep -q' under pipefail on 2MB payload returned rc=$raw_rc (host-dependent hazard demo; 0 would mean not reproduced here)"
-if nq_stream_contains cat "$T/bigstream.txt" -- 'THE_TOKEN_ON_LINE_ONE' >/dev/null; then
+if nq_stream_contains cat "$T/bigstream.txt" -- 'THE_TOKEN_ON_LINE_ONE' 'THE_TOKEN_ON_LINE_ONE' >/dev/null; then
   ok "G1 nq_stream_contains reads producer to EOF -> PRESENT on the same payload (SIGPIPE class closed by construction)"
 else
   bad "G1 nq_stream_contains failed to see a present token on a large stream"
 fi
 
-# ---- H stream absent + blind producer --------------------------------------
-if out=$(nq_stream_contains cat "$T/bigstream.txt" -- 'TOKEN_NOWHERE'); then
+# ---- H stream absence needs a sighted needle + blind producer ----------------
+if out=$(nq_stream_contains cat "$T/bigstream.txt" -- 'TOKEN_NOWHERE' 'THE_TOKEN_ON_LINE_ONE'); then
   bad "H1 absent stream token reported present"
 else
   rc=$?
-  [ "$rc" -eq 1 ] && ok "H1 absent stream token -> absent(1)" || bad "H1 expected 1, got $rc"
+  if [ "$rc" -eq 1 ] && printf '%s\n' "$out" | grep -q 'CERTIFIED-ABSENT'; then
+    ok "H1 absent stream token -> CERTIFIED-ABSENT(1) with the needle sighted through the same stream"
+  else
+    bad "H1 expected CERTIFIED-ABSENT(1), got rc=$rc out=$out"
+  fi
 fi
-if out=$(nq_stream_contains false -- 'ANYTHING'); then
+if out=$(nq_stream_contains false -- 'ANYTHING' 'ANYTHING'); then
   bad "H2 failed producer reported a verdict"
 else
   rc=$?
   [ "$rc" -eq 2 ] && ok "H2 failed producer -> INSTRUMENT-BLIND(2), never a verdict" || bad "H2 expected 2, got $rc"
+fi
+# H3 golden-bad: zero matches + UNSIGHTED needle must be BLIND, never absent —
+# the stream analogue of nq_absent case C (§11.4.201(7)(b)).
+if out=$(nq_stream_contains cat "$T/bigstream.txt" -- 'TOKEN_NOWHERE' 'NEEDLE_ALSO_NOWHERE'); then
+  bad "H3 unsighted needle produced a PRESENT verdict"
+else
+  rc=$?
+  if [ "$rc" -eq 2 ] && printf '%s\n' "$out" | grep -q 'INSTRUMENT-BLIND'; then
+    ok "H3 zero matches + unsighted needle -> INSTRUMENT-BLIND(2), never CERTIFIED-ABSENT"
+  else
+    bad "H3 expected INSTRUMENT-BLIND(2), got rc=$rc out=$out"
+  fi
+fi
+# H4 golden-bad: class-mismatched needle refused on a feature-bearing query —
+# the stream analogue of nq_absent case D.
+if out=$(nq_stream_contains cat "$T/bigstream.txt" -- 'ABSENT_A|ABSENT_B' 'THE_TOKEN_ON_LINE_ONE'); then
+  bad "H4 class-mismatched needle produced a PRESENT verdict"
+else
+  rc=$?
+  if [ "$rc" -eq 3 ] && printf '%s\n' "$out" | grep -q 'NEEDLE-CLASS-MISMATCH'; then
+    ok "H4 alternation query + literal needle -> NEEDLE-CLASS-MISMATCH(3) refused on the stream path"
+  else
+    bad "H4 expected NEEDLE-CLASS-MISMATCH(3), got rc=$rc out=$out"
+  fi
 fi
 
 echo "----------------------------------------"

@@ -43,10 +43,11 @@ fi
 FINDINGS=0
 report() { echo "CUSTODY-FINDING[$1]: $2"; FINDINGS=$((FINDINGS+1)); }
 
-# C0 (opt-in) — a DB declared triggered must still carry its triggers.
+# C0 (opt-in) — a DB declared triggered must still carry its triggers
+# (3 UPDATE-path + 3 INSERT-path twins + 2 append-only guards = 8).
 if [ "$REQUIRE_TRIGGERS" -eq 1 ]; then
-  NTRG=$(q "SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name IN ('custody_terminal_refuse','custody_reopen_refuse','custody_history_auto','history_no_update','history_no_delete');")
-  [ "${NTRG:-0}" = "5" ] || report C0 "DB declared triggered but carries ${NTRG:-0}/5 custody triggers (DROP TRIGGER detected)"
+  NTRG=$(q "SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name IN ('custody_terminal_refuse','custody_reopen_refuse','custody_history_auto','custody_terminal_refuse_ins','custody_reopen_refuse_ins','custody_history_auto_ins','history_no_update','history_no_delete');")
+  [ "${NTRG:-0}" = "8" ] || report C0 "DB declared triggered but carries ${NTRG:-0}/8 custody triggers (DROP TRIGGER detected)"
 fi
 
 # C1 — terminal-status items with ZERO history rows (the measured 48% class).

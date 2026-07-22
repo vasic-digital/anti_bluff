@@ -1,0 +1,31 @@
+=== RED CAPTURE (pre-fix artifact, HEAD 1e193e1, 2026-07-22T23:53:26Z) ===
+--- SUITE: test_insert_custody.sh (IMPORTANT-1 — INSERT-door bypass) ---
+FAIL: A1 raw un-evidenced terminal INSERT was ACCEPTED (the INSERT door is open — PC-1 bypass live)
+FAIL: A2 bypass row landed: items now holds 1 row(s) for AB-I-001
+PASS: B1 insert-at-terminal WITH full custody chain succeeds (no §11.4.201(1) false refusal)
+FAIL: B2 expected 1 auto history row for insert-at-terminal, got 0
+PASS: C1 ordinary non-terminal INSERT succeeds untouched
+PASS: D1 un-evidenced terminal UPDATE still refused (UPDATE seam intact)
+FAIL: E1 un-staged Reopened INSERT was ACCEPTED
+FAIL: E2 insert accepted but by_actor='' not 'User'
+FAIL: F1 sweep flagged the legitimate insert-at-terminal DB: CUSTODY-FINDING[C1]: item AB-I-002 status='Fixed' has zero item_history rows
+SWEEP: items=2 findings=1
+----------------------------------------
+RESULT: PASS=3 FAIL=6
+exit=1
+--- SUITE: test_needle.sh (NIT-2 — needle-less stream absence) ---
+PASS: A1 present token -> PRESENT(1) carrying the matching lines (MU-6: lines, not just a count)
+PASS: B1 absent token -> CERTIFIED-ABSENT(0) with the needle sighted through the same path
+PASS: C1 blind instrument -> INSTRUMENT-BLIND(2), never CERTIFIED-ABSENT (golden-bad caught)
+PASS: D1 alternation query + literal needle -> NEEDLE-CLASS-MISMATCH(3) refused
+PASS: E1 same query certified once the needle carries the alternation feature class
+PASS: F1 mid-line carrier does not satisfy a line-anchored query (carrier-vs-thing negative control)
+INFO: raw 'cat | grep -q' under pipefail on 2MB payload returned rc=141 (host-dependent hazard demo; 0 would mean not reproduced here)
+PASS: G1 nq_stream_contains reads producer to EOF -> PRESENT on the same payload (SIGPIPE class closed by construction)
+FAIL: H1 expected CERTIFIED-ABSENT(1), got rc=1 out=ABSENT: 0 matches for 'TOKEN_NOWHERE' (producer read to EOF — no SIGPIPE truncation possible)
+PASS: H2 failed producer -> INSTRUMENT-BLIND(2), never a verdict
+FAIL: H3 expected INSTRUMENT-BLIND(2), got rc=1 out=ABSENT: 0 matches for 'TOKEN_NOWHERE' (producer read to EOF — no SIGPIPE truncation possible)
+FAIL: H4 expected NEEDLE-CLASS-MISMATCH(3), got rc=1 out=ABSENT: 0 matches for 'ABSENT_A|ABSENT_B' (producer read to EOF — no SIGPIPE truncation possible)
+----------------------------------------
+RESULT: PASS=8 FAIL=3
+exit=1

@@ -10,8 +10,10 @@
 #   install.sh --db <tracker.db> [--init] [--no-probe]
 #       Apply the SOL-01 status-custody seam to the consumer's SQLite tracker.
 #       After this, a terminal status without a registered guard + RED/GREEN
-#       verdict pair on distinct artifact fingerprints is UNWRITABLE — for every
-#       writer, including raw sqlite3.
+#       verdict pair on distinct artifact fingerprints is UNWRITABLE through
+#       BOTH status-write paths — UPDATE and INSERT — for every writer,
+#       including raw sqlite3. (Row DELETE, direct chain-row fabrication, and
+#       DROP TRIGGER remain outside this seam — see README §4 honest boundaries.)
 #   install.sh --self-test
 #       Run the bundled anti-bluff suite (golden-good + golden-bad +
 #       negative-control per mechanism, §11.4.107(10)) including the hermetic

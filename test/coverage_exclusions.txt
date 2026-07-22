@@ -1,0 +1,5 @@
+# §11.4.224(E) checked-in coverage-corpus exclusion list.
+# Format: <repo-relative-path> <justification>
+# Every entry is printed by coverage_report.sh as an HONEST GAP, never silent.
+# First-party entries carry a tracked §11.4.197 item (README §5).
+test/coverage_report.sh first-party measurement instrument; runs OUTSIDE the suite it traces, so this run cannot attribute its own lines — self-measurement OWED per README §5 item 6 (§11.4.197)

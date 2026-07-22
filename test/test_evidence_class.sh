@@ -46,7 +46,7 @@ fi
 cat > "$T/echo.ev" <<'EOF'
 EVIDENCE-CLASS: runtime
 TARGET_FINGERPRINT: build-2026-07-23-abcdef
-RUNTIME_OBSERVABLE: grep: 5 hits for RouteToSecondary in VideoOutputManagerService.java
+RUNTIME_OBSERVABLE: grep: 5 hits for renderFrame in ExamplePlayerService.java
 EOF
 if bash "$CHECK" user-visible "$T/echo.ev" >"$T/b.out" 2>&1; then
   bad "B1 grep transcript wearing a runtime label was ACCEPTED (the five-greps-for-a-pixel-defect bluff)"
@@ -69,7 +69,7 @@ fi
 # ---- D negative-control: source-on-source is legitimate --------------------
 cat > "$T/source.ev" <<'EOF'
 EVIDENCE-CLASS: source
-SOURCE_REF: commit 9261537 file scripts/lib/foo.sh line 42
+SOURCE_REF: commit abc1234 file scripts/lib/example.sh line 42
 EOF
 if bash "$CHECK" source "$T/source.ev" >"$T/d.out" 2>&1; then
   ok "D1 source-layer defect closed on source evidence (no false refusal)"

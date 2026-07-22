@@ -78,23 +78,49 @@ nq_count() {
   esac
 }
 
-# nq_stream_contains <producer-cmd...> -- <ere>
-# SIGPIPE-safe stream presence: the consumer reads the producer to EOF (grep -c,
-# never grep -q), so the producer is never SIGPIPE-killed and pipefail never
-# converts a present literal into an absent verdict.
-# 0 present | 1 absent | 2 blind (producer failed)
+# nq_stream_contains <producer-cmd...> -- <query-ere> <needle-ere>
+# SIGPIPE-safe stream presence/absence: the consumer reads the producer to EOF
+# (grep -c, never grep -q), so the producer is never SIGPIPE-killed and pipefail
+# never converts a present literal into an absent verdict.
+# An ABSENCE verdict is returned ONLY after a known-present needle is sighted
+# through the SAME instrument + captured stream (§11.4.201(7)(b)) — this is the
+# needle library itself, so a needle-less absence here would be load-bearing
+# irony. The needle must share the query's load-bearing feature classes, exactly
+# as in nq_absent.
+# 0 PRESENT | 1 CERTIFIED-ABSENT | 2 INSTRUMENT-BLIND | 3 NEEDLE-CLASS-MISMATCH
 nq_stream_contains() {
   local -a producer=()
   while [ $# -gt 0 ] && [ "$1" != "--" ]; do producer+=("$1"); shift; done
   [ "${1:-}" = "--" ] && shift
   local query="${1:?nq_stream_contains: missing query after --}"
+  local needle="${2:?nq_stream_contains: missing needle after query (§11.4.201(7)(b) — absence cannot be certified without one)}"
+
+  # Needle-class check (same law as nq_absent): every load-bearing feature the
+  # query uses must appear in the needle, or the needle cannot certify the path.
+  local qf nf f missing=""
+  qf=$(_nq_features "$query"); nf=$(_nq_features "$needle")
+  for f in $qf; do
+    case " $nf " in *" $f "*) : ;; *) missing="$missing $f";; esac
+  done
+  if [ -n "$missing" ]; then
+    echo "NEEDLE-CLASS-MISMATCH: query exercises{$qf } needle lacks{$missing } — refusing certification"
+    return 3
+  fi
+
   local tmp rc n
   tmp=$(mktemp)
   "${producer[@]}" > "$tmp" 2>/dev/null; rc=$?
   if [ "$rc" -ne 0 ]; then rm -f "$tmp"; echo "INSTRUMENT-BLIND: producer exited $rc"; return 2; fi
-  n=$("$NQ_GREP" -Ec -- "$query" "$tmp"); rc=$?
+  n=$("$NQ_GREP" -Ec -- "$query" "$tmp")
+  if [ "${n:-0}" -gt 0 ]; then rm -f "$tmp"; echo "PRESENT: $n line(s) match '$query'"; return 0; fi
+  # Zero hits — sight the needle through the SAME instrument + captured stream
+  # before reporting anything (§11.4.201(7)(b)).
+  if ! "$NQ_GREP" -Eq -- "$needle" "$tmp" 2>/dev/null; then
+    rm -f "$tmp"
+    echo "INSTRUMENT-BLIND: needle '$needle' returned 0 through the same captured stream — the query's zero says NOTHING (report the blindness, never the absence)"
+    return 2
+  fi
   rm -f "$tmp"
-  if [ "${n:-0}" -gt 0 ]; then echo "PRESENT: $n line(s) match '$query'"; return 0; fi
-  echo "ABSENT: 0 matches for '$query' (producer read to EOF — no SIGPIPE truncation possible)"
+  echo "CERTIFIED-ABSENT: 0 matches for '$query'; needle '$needle' sighted through the same captured stream (producer read to EOF — no SIGPIPE truncation possible)"
   return 1
 }

@@ -90,7 +90,9 @@ if [ "${TPL#*__AB_TERMINAL_LIST__}" = "$TPL" ]; then
   echo "AB-BLIND: custody_triggers.sql carries no __AB_TERMINAL_LIST__ marker — template corrupt"; exit 2
 fi
 {
-  for trg in custody_terminal_refuse custody_reopen_refuse custody_history_auto history_no_update history_no_delete; do
+  for trg in custody_terminal_refuse custody_reopen_refuse custody_history_auto \
+             custody_terminal_refuse_ins custody_reopen_refuse_ins custody_history_auto_ins \
+             history_no_update history_no_delete; do
     echo "DROP TRIGGER IF EXISTS $trg;"
   done
   printf '%s\n' "${TPL//__AB_TERMINAL_LIST__/$TLIST}"
@@ -103,19 +105,20 @@ esac
 
 "$SQLITE" "$DB" < "$TMP" || { echo "AB-FAILED: trigger application failed on $DB"; exit 1; }
 
-# Verify the ARTIFACT layer: all 5 triggers present in sqlite_master.
-NTRG=$("$SQLITE" -readonly "$DB" "SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name IN ('custody_terminal_refuse','custody_reopen_refuse','custody_history_auto','history_no_update','history_no_delete');")
-if [ "${NTRG:-0}" != "5" ]; then
-  echo "AB-FAILED: expected 5 custody triggers in $DB, found ${NTRG:-0}"
+# Verify the ARTIFACT layer: all 8 triggers present in sqlite_master
+# (3 UPDATE-path + 3 INSERT-path twins + 2 append-only guards).
+NTRG=$("$SQLITE" -readonly "$DB" "SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name IN ('custody_terminal_refuse','custody_reopen_refuse','custody_history_auto','custody_terminal_refuse_ins','custody_reopen_refuse_ins','custody_history_auto_ins','history_no_update','history_no_delete');")
+if [ "${NTRG:-0}" != "8" ]; then
+  echo "AB-FAILED: expected 8 custody triggers in $DB, found ${NTRG:-0}"
   exit 1
 fi
-echo "AB-APPLIED: 5 custody triggers present in $DB (terminal vocabulary: $TLIST)"
+echo "AB-APPLIED: 8 custody triggers present in $DB (terminal vocabulary: $TLIST)"
 
-# Live refusal probe (§11.4.108 RUNTIME layer): inside a never-committed
-# transaction, insert a throwaway item and attempt an un-evidenced terminal
-# write. The trigger MUST abort it. -bail exits at the abort; the connection
-# close rolls the open transaction back, so the probe leaves ZERO residue in
-# both branches.
+# Live refusal probes (§11.4.108 RUNTIME layer): inside never-committed
+# transactions, attempt an un-evidenced terminal write through BOTH status-write
+# paths — UPDATE and INSERT. The triggers MUST abort both. -bail exits at the
+# abort; the connection close rolls the open transaction back, so each probe
+# leaves ZERO residue in both branches.
 if [ "$PROBE" -eq 1 ]; then
   PID="__AB_PROBE_$$_${RANDOM}"
   FIRST=$(ab_first_terminal) || { echo "AB-FAILED: no terminal literal for probe"; exit 1; }
@@ -126,17 +129,38 @@ INSERT INTO items(atm_id,title,type,status) VALUES('$PID','anti_bluff live probe
 UPDATE items SET status='$FIRST_SQL' WHERE atm_id='$PID';
 ROLLBACK;" 2>"$PERR"; then
     rm -f "$PERR"
-    echo "AB-PROBE-FAILED: un-evidenced terminal write was ACCEPTED on $DB — the seam does NOT bind; refusing to report success"
+    echo "AB-PROBE-FAILED: un-evidenced terminal UPDATE was ACCEPTED on $DB — the seam does NOT bind; refusing to report success"
     exit 1
   fi
   if grep -q 'CUSTODY-REFUSED' "$PERR"; then
-    echo "PROBE-REFUSED-OK: live un-evidenced terminal write refused on $DB (runtime signature verified, zero residue)"
+    echo "PROBE-REFUSED-OK: live un-evidenced terminal UPDATE refused on $DB (runtime signature verified, zero residue)"
     rm -f "$PERR"
   else
     echo "AB-PROBE-INCONCLUSIVE: probe insert/update failed for a schema-specific reason, not a custody refusal:"
     sed 's/^/  /' "$PERR"
     rm -f "$PERR"
-    echo "  Trigger presence IS verified (5/5); adapt the probe to your schema's required columns."
+    echo "  Trigger presence IS verified (8/8); adapt the probe to your schema's required columns."
+    exit 1
+  fi
+  # INSERT-path probe (IMPORTANT-1): a row BORN at a terminal status without the
+  # custody chain must be refused identically.
+  PID2="__AB_PROBE_INS_$$_${RANDOM}"
+  PERR2=$(mktemp)
+  if "$SQLITE" -bail "$DB" "BEGIN;
+INSERT INTO items(atm_id,title,type,status) VALUES('$PID2','anti_bluff live insert probe','Task','$FIRST_SQL');
+ROLLBACK;" 2>"$PERR2"; then
+    rm -f "$PERR2"
+    echo "AB-PROBE-FAILED: un-evidenced terminal INSERT was ACCEPTED on $DB — the INSERT door is open; refusing to report success"
+    exit 1
+  fi
+  if grep -q 'CUSTODY-REFUSED' "$PERR2"; then
+    echo "PROBE-REFUSED-OK: live un-evidenced terminal INSERT refused on $DB (INSERT-path runtime signature verified, zero residue)"
+    rm -f "$PERR2"
+  else
+    echo "AB-PROBE-INCONCLUSIVE: INSERT probe failed for a schema-specific reason, not a custody refusal:"
+    sed 's/^/  /' "$PERR2"
+    rm -f "$PERR2"
+    echo "  Trigger presence IS verified (8/8); adapt the probe to your schema's required columns."
     exit 1
   fi
 fi

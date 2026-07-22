@@ -120,8 +120,8 @@ fi
 # ---- H installer: --init + idempotency + live probe -------------------------
 DB="$T/installed.db"
 if bash "$SEAM/apply_custody.sh" "$DB" --init >"$T/h1.out" 2>&1; then
-  NTRG=$("$SQLITE" "$DB" "SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name IN ('custody_terminal_refuse','custody_reopen_refuse','custody_history_auto','history_no_update','history_no_delete');")
-  [ "$NTRG" = "5" ] && ok "H1 apply_custody --init lands all 5 triggers" || bad "H1 expected 5 triggers, got $NTRG"
+  NTRG=$("$SQLITE" "$DB" "SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name IN ('custody_terminal_refuse','custody_reopen_refuse','custody_history_auto','custody_terminal_refuse_ins','custody_reopen_refuse_ins','custody_history_auto_ins','history_no_update','history_no_delete');")
+  [ "$NTRG" = "8" ] && ok "H1 apply_custody --init lands all 8 triggers (UPDATE + INSERT paths)" || bad "H1 expected 8 triggers, got $NTRG"
   grep -q 'PROBE-REFUSED-OK' "$T/h1.out" && ok "H2 live probe proved the refusal fires on THIS db (§11.4.108 runtime signature)" \
     || bad "H2 no live-probe refusal proof in installer output: $(cat "$T/h1.out")"
 else

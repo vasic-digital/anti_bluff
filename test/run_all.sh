@@ -4,7 +4,7 @@
 # never a skip (§11.4.3: PASS-by-default is forbidden; §11.4.224: RED first).
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SUITES=(test_needle.sh test_status_custody.sh test_evidence_class.sh test_out_of_box.sh)
+SUITES=(test_needle.sh test_status_custody.sh test_insert_custody.sh test_evidence_class.sh test_out_of_box.sh)
 TOTAL=0; RED=0
 for s in "${SUITES[@]}"; do
   echo "=============================================="
