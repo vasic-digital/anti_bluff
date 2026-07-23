@@ -81,10 +81,14 @@ fi
 # DROP-before-CREATE for idempotency.
 TLIST=$(ab_terminal_list) || exit 1
 TMP=$(mktemp); trap 'rm -f "$TMP"' EXIT
-# Substitute the template marker via bash string replacement — the replacement
-# side of ${var//pat/rep} is literal in bash, so the SQL-quoted list (which may
-# carry unicode + quotes) needs no second escaping layer (the sed-metacharacter
-# class of instrument trap is avoided by not using sed at all).
+# Substitute the template marker via bash string replacement — no sed, so the
+# sed-metacharacter class of instrument trap is avoided, and the SQL-quoted
+# list (which may carry unicode + quotes) needs no second escaping layer.
+# CAVEAT (verified on bash 5.2.37, §11.4.6): the replacement side of
+# ${var//pat/rep} is literal ONLY for values without `&` — on bash >= 5.2
+# (`patsub_replacement` on by default) an unquoted `&` in the replacement
+# re-expands to the MATCHED pattern, i.e. the marker itself; that case is
+# caught fail-closed by the post-substitution check below.
 TPL=$(cat "$HERE/custody_triggers.sql")
 if [ "${TPL#*__AB_TERMINAL_LIST__}" = "$TPL" ]; then
   echo "AB-BLIND: custody_triggers.sql carries no __AB_TERMINAL_LIST__ marker — template corrupt"; exit 2
@@ -97,8 +101,14 @@ fi
   done
   printf '%s\n' "${TPL//__AB_TERMINAL_LIST__/$TLIST}"
 } > "$TMP"
-# Post-substitution needle (§11.4.201(7)(b)): the marker MUST be gone and the
-# first terminal literal MUST be present in the generated SQL.
+# Post-substitution needle (§11.4.201(7)(b)): assert ONLY that the marker is
+# GONE from the generated SQL — no terminal-literal-present check is performed
+# here (the live refusal probes below are the positive evidence). Fail-closed
+# cause worth naming (verified on bash 5.2.37): an `&` inside an
+# AB_TERMINAL_STATUSES value re-expands, via `patsub_replacement` (bash >= 5.2
+# default), to the matched `__AB_TERMINAL_LIST__` marker — the marker then
+# survives substitution and this check refuses (AB-FAILED, exit 1), so a
+# corrupt vocabulary never reaches the DB.
 case "$(cat "$TMP")" in
   *__AB_TERMINAL_LIST__*) echo "AB-FAILED: template substitution left the marker in place"; exit 1 ;;
 esac

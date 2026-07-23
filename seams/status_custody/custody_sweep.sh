@@ -6,7 +6,7 @@
 # FULL-TABLE sweep by design).
 #
 # Usage : custody_sweep.sh <db-path> [--require-triggers]
-#           --require-triggers  additionally FAIL when the 5 custody triggers are
+#           --require-triggers  additionally FAIL when the 8 custody triggers are
 #                               absent (for DBs DECLARED triggered; default off so
 #                               legacy DBs are legitimately sweepable without a
 #                               §11.4.201(1) false positive)
