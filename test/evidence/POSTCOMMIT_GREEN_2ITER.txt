@@ -1,0 +1,174 @@
+=== POST-COMMIT FULL-SUITE GREEN — iteration 1 @ 35167e8 2026-07-23T00:00:04Z ===
+==============================================
+SUITE: test_needle.sh
+==============================================
+PASS: A1 present token -> PRESENT(1) carrying the matching lines (MU-6: lines, not just a count)
+PASS: B1 absent token -> CERTIFIED-ABSENT(0) with the needle sighted through the same path
+PASS: C1 blind instrument -> INSTRUMENT-BLIND(2), never CERTIFIED-ABSENT (golden-bad caught)
+PASS: D1 alternation query + literal needle -> NEEDLE-CLASS-MISMATCH(3) refused
+PASS: E1 same query certified once the needle carries the alternation feature class
+PASS: F1 mid-line carrier does not satisfy a line-anchored query (carrier-vs-thing negative control)
+INFO: raw 'cat | grep -q' under pipefail on 2MB payload returned rc=141 (host-dependent hazard demo; 0 would mean not reproduced here)
+PASS: G1 nq_stream_contains reads producer to EOF -> PRESENT on the same payload (SIGPIPE class closed by construction)
+PASS: H1 absent stream token -> CERTIFIED-ABSENT(1) with the needle sighted through the same stream
+PASS: H2 failed producer -> INSTRUMENT-BLIND(2), never a verdict
+PASS: H3 zero matches + unsighted needle -> INSTRUMENT-BLIND(2), never CERTIFIED-ABSENT
+PASS: H4 alternation query + literal needle -> NEEDLE-CLASS-MISMATCH(3) refused on the stream path
+----------------------------------------
+RESULT: PASS=11 FAIL=0
+SUITE-RESULT: test_needle.sh GREEN
+==============================================
+SUITE: test_status_custody.sh
+==============================================
+PASS: A1 terminal write with full custody chain succeeds
+PASS: A2 history row auto-written by the DB itself
+PASS: A3 sweep PASS on custody-clean DB
+PASS: B1 raw un-evidenced terminal write refused with custody message
+PASS: C1 sweep FAILs legacy DB and names the offending item
+PASS: D1 sweep does NOT flag an ordinary open item (false-positive guard)
+PASS: E1 un-staged Reopened flip refused
+PASS: E2 staged operator reopen recorded with by_actor=User (closes the M6 channel)
+PASS: F1 item_history is append-only (UPDATE refused)
+PASS: G1 identical-fingerprint verdict pair refused (§11.4.115(F))
+PASS: H1 apply_custody --init lands all 8 triggers (UPDATE + INSERT paths)
+PASS: H2 live probe proved the refusal fires on THIS db (§11.4.108 runtime signature)
+PASS: H3 second apply is idempotent (re-apply succeeds)
+PASS: H4 probe left zero residue rows
+PASS: H5 apply_custody fails closed on a missing DB without --init (§11.4.6)
+PASS: I1 consumer-vocabulary terminal literal refused un-evidenced
+PASS: I2 sweep honors consumer vocabulary and names the offender
+PASS: J1 empty items table -> SWEEP-BLIND-OR-EMPTY(2), never a PASS (§11.4.201(7)(b))
+----------------------------------------
+RESULT: PASS=18 FAIL=0
+SUITE-RESULT: test_status_custody.sh GREEN
+==============================================
+SUITE: test_insert_custody.sh
+==============================================
+PASS: A1 raw un-evidenced terminal INSERT refused with custody message
+PASS: A2 refused INSERT left zero rows (no partial write)
+PASS: B1 insert-at-terminal WITH full custody chain succeeds (no §11.4.201(1) false refusal)
+PASS: B2 DB wrote its own audit row for the inserted terminal item
+PASS: C1 ordinary non-terminal INSERT succeeds untouched
+PASS: D1 un-evidenced terminal UPDATE still refused (UPDATE seam intact)
+PASS: E1 un-staged Reopened INSERT refused
+PASS: E2 staged Reopened INSERT recorded with by_actor=User
+PASS: F1 custody sweep passes the insert-at-terminal DB (history twin keeps C1 coherent)
+----------------------------------------
+RESULT: PASS=9 FAIL=0
+SUITE-RESULT: test_insert_custody.sh GREEN
+==============================================
+SUITE: test_evidence_class.sh
+==============================================
+PASS: A1 user-visible defect + true runtime evidence accepted
+PASS: B1 grep-echo refused as WRONG-LAYER
+PASS: C1 fieldless label refused as SHAPE-INCOMPLETE
+PASS: D1 source-layer defect closed on source evidence (no false refusal)
+PASS: E1 unreadable evidence -> BLIND(2), never accepted
+PASS: F1 artifact evidence refused as CLASS-INSUFFICIENT for a user-visible defect
+----------------------------------------
+RESULT: PASS=6 FAIL=0
+SUITE-RESULT: test_evidence_class.sh GREEN
+==============================================
+SUITE: test_out_of_box.sh
+==============================================
+PASS: OB1 committed tree clones into a throwaway consumer project
+PASS: OB2 one-command install succeeds from the clone
+PASS: OB3 installer proved the refusal live on the consumer DB
+PASS: OB4 raw un-evidenced terminal write REFUSED on the consumer DB
+PASS: OB5 full-custody write succeeds + DB wrote its own audit row
+PASS: OB6 custody sweep runs from the clone and passes the clean consumer DB
+PASS: OB7 evidence-class checker from the clone refuses a grep-echo
+PASS: OB8 needle library certifies an absence through the clone (needle sighted in README)
+----------------------------------------
+RESULT: PASS=8 FAIL=0
+SUITE-RESULT: test_out_of_box.sh GREEN
+==============================================
+SUITES: total=5 red=0
+iter1-exit=0
+=== POST-COMMIT FULL-SUITE GREEN — iteration 2 @ 35167e8 2026-07-23T00:00:05Z ===
+==============================================
+SUITE: test_needle.sh
+==============================================
+PASS: A1 present token -> PRESENT(1) carrying the matching lines (MU-6: lines, not just a count)
+PASS: B1 absent token -> CERTIFIED-ABSENT(0) with the needle sighted through the same path
+PASS: C1 blind instrument -> INSTRUMENT-BLIND(2), never CERTIFIED-ABSENT (golden-bad caught)
+PASS: D1 alternation query + literal needle -> NEEDLE-CLASS-MISMATCH(3) refused
+PASS: E1 same query certified once the needle carries the alternation feature class
+PASS: F1 mid-line carrier does not satisfy a line-anchored query (carrier-vs-thing negative control)
+INFO: raw 'cat | grep -q' under pipefail on 2MB payload returned rc=141 (host-dependent hazard demo; 0 would mean not reproduced here)
+PASS: G1 nq_stream_contains reads producer to EOF -> PRESENT on the same payload (SIGPIPE class closed by construction)
+PASS: H1 absent stream token -> CERTIFIED-ABSENT(1) with the needle sighted through the same stream
+PASS: H2 failed producer -> INSTRUMENT-BLIND(2), never a verdict
+PASS: H3 zero matches + unsighted needle -> INSTRUMENT-BLIND(2), never CERTIFIED-ABSENT
+PASS: H4 alternation query + literal needle -> NEEDLE-CLASS-MISMATCH(3) refused on the stream path
+----------------------------------------
+RESULT: PASS=11 FAIL=0
+SUITE-RESULT: test_needle.sh GREEN
+==============================================
+SUITE: test_status_custody.sh
+==============================================
+PASS: A1 terminal write with full custody chain succeeds
+PASS: A2 history row auto-written by the DB itself
+PASS: A3 sweep PASS on custody-clean DB
+PASS: B1 raw un-evidenced terminal write refused with custody message
+PASS: C1 sweep FAILs legacy DB and names the offending item
+PASS: D1 sweep does NOT flag an ordinary open item (false-positive guard)
+PASS: E1 un-staged Reopened flip refused
+PASS: E2 staged operator reopen recorded with by_actor=User (closes the M6 channel)
+PASS: F1 item_history is append-only (UPDATE refused)
+PASS: G1 identical-fingerprint verdict pair refused (§11.4.115(F))
+PASS: H1 apply_custody --init lands all 8 triggers (UPDATE + INSERT paths)
+PASS: H2 live probe proved the refusal fires on THIS db (§11.4.108 runtime signature)
+PASS: H3 second apply is idempotent (re-apply succeeds)
+PASS: H4 probe left zero residue rows
+PASS: H5 apply_custody fails closed on a missing DB without --init (§11.4.6)
+PASS: I1 consumer-vocabulary terminal literal refused un-evidenced
+PASS: I2 sweep honors consumer vocabulary and names the offender
+PASS: J1 empty items table -> SWEEP-BLIND-OR-EMPTY(2), never a PASS (§11.4.201(7)(b))
+----------------------------------------
+RESULT: PASS=18 FAIL=0
+SUITE-RESULT: test_status_custody.sh GREEN
+==============================================
+SUITE: test_insert_custody.sh
+==============================================
+PASS: A1 raw un-evidenced terminal INSERT refused with custody message
+PASS: A2 refused INSERT left zero rows (no partial write)
+PASS: B1 insert-at-terminal WITH full custody chain succeeds (no §11.4.201(1) false refusal)
+PASS: B2 DB wrote its own audit row for the inserted terminal item
+PASS: C1 ordinary non-terminal INSERT succeeds untouched
+PASS: D1 un-evidenced terminal UPDATE still refused (UPDATE seam intact)
+PASS: E1 un-staged Reopened INSERT refused
+PASS: E2 staged Reopened INSERT recorded with by_actor=User
+PASS: F1 custody sweep passes the insert-at-terminal DB (history twin keeps C1 coherent)
+----------------------------------------
+RESULT: PASS=9 FAIL=0
+SUITE-RESULT: test_insert_custody.sh GREEN
+==============================================
+SUITE: test_evidence_class.sh
+==============================================
+PASS: A1 user-visible defect + true runtime evidence accepted
+PASS: B1 grep-echo refused as WRONG-LAYER
+PASS: C1 fieldless label refused as SHAPE-INCOMPLETE
+PASS: D1 source-layer defect closed on source evidence (no false refusal)
+PASS: E1 unreadable evidence -> BLIND(2), never accepted
+PASS: F1 artifact evidence refused as CLASS-INSUFFICIENT for a user-visible defect
+----------------------------------------
+RESULT: PASS=6 FAIL=0
+SUITE-RESULT: test_evidence_class.sh GREEN
+==============================================
+SUITE: test_out_of_box.sh
+==============================================
+PASS: OB1 committed tree clones into a throwaway consumer project
+PASS: OB2 one-command install succeeds from the clone
+PASS: OB3 installer proved the refusal live on the consumer DB
+PASS: OB4 raw un-evidenced terminal write REFUSED on the consumer DB
+PASS: OB5 full-custody write succeeds + DB wrote its own audit row
+PASS: OB6 custody sweep runs from the clone and passes the clean consumer DB
+PASS: OB7 evidence-class checker from the clone refuses a grep-echo
+PASS: OB8 needle library certifies an absence through the clone (needle sighted in README)
+----------------------------------------
+RESULT: PASS=8 FAIL=0
+SUITE-RESULT: test_out_of_box.sh GREEN
+==============================================
+SUITES: total=5 red=0
+iter2-exit=0

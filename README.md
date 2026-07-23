@@ -145,17 +145,25 @@ bullet). The claim is bounded exactly here — nothing broader.
    these seams into `pre_build_verification.sh`-class suites; four-format doc
    exports.
 6. **§11.4.197 OWED — §11.4.224 coverage floor (measured, not yet at floor).**
-   Line-coverage lower bounds were MEASURED with the §11.4.224(E) PS4
+   Line-coverage lower bounds MEASURED 2026-07-23 with the §11.4.224(E) PS4
    line-trace mechanism (`test/coverage_report.sh`; captured report
-   `test/evidence/COVERAGE_20260723.txt`). Honest limits of the instrument:
-   LINE coverage, NOT branch coverage; `set +x` regions and traps unaccounted;
-   block terminators (`fi`/`done`/`}`/heredoc bodies) count in the denominator
-   but never appear in a trace — so the figures are conservative LOWER BOUNDS
-   that structurally undercount. OWED: per-corpus calibration of the 85%
-   floor against these mechanics + raising any genuinely-under-floor file +
-   a branch-capable instrument (e.g. `kcov`). No Go sources exist in this
-   slice (`go test -cover` NOT APPLICABLE — honest §11.4.3 skip; Go enters
-   with the OWED fuzz-corpus-replay slice).
+   `test/evidence/COVERAGE_20260723.txt`): corpus TOTAL **446/830 = 53%
+   lower bound** (per-file 40–73%; suite exit 0 under trace — the tracer did
+   not perturb the tests). Honest limits of the instrument: LINE coverage,
+   NOT branch coverage; `set +x` regions and traps unaccounted; block
+   terminators (`fi`/`done`/`}`) AND continuation lines of multi-line
+   commands + heredoc fixture bodies (the dominant undercount here — a
+   5-line SQL heredoc counts 5 in the denominator, at most 1 in a trace)
+   never appear in a trace — so the figures are conservative LOWER BOUNDS
+   that structurally undercount; the recorded 53% is NOT a claim the true
+   figure meets or misses the 85% floor. OWED: per-corpus calibration of
+   the 85% floor against these mechanics + raising any genuinely-under-floor
+   file + a branch-capable instrument (e.g. `kcov` — probed ABSENT on this
+   host) + self-measurement of `test/coverage_report.sh` (excluded via the
+   checked-in §11.4.224(E) fence `test/coverage_exclusions.txt`, printed as
+   an honest gap on every run). No Go sources exist in this slice
+   (`go test -cover` NOT APPLICABLE — honest §11.4.3 skip; Go enters with
+   the OWED fuzz-corpus-replay slice).
 7. **§11.4.197 OWED — row-DELETE custody.** `DELETE FROM items` on a terminal
    item is not refused by this slice (see §4); §11.4.54 id-stability
    enforcement at the DB layer is owed.

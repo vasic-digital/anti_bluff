@@ -84,6 +84,8 @@ printf 'TOTAL (measured corpus)                       %4d/%-4d = %3d%%\n' \
   "$TOT_EXEC" "$TOT_ABLE" "$(( TOT_ABLE > 0 ? TOT_EXEC * 100 / TOT_ABLE : 0 ))"
 echo "Go sources: $(git -C "$ROOT" ls-files '*.go' | wc -l) — 'go test -cover' NOT APPLICABLE in this slice (honest §11.4.3 skip)"
 echo "kcov present: $(command -v kcov >/dev/null && echo yes || echo no); bashcov: $(command -v bashcov >/dev/null && echo yes || echo no); bats: $(command -v bats >/dev/null && echo yes || echo no)"
-echo "HONEST LIMITS: line-not-branch; set+x/traps unaccounted; block terminators"
-echo "in denominator but untraceable -> every figure is a conservative lower bound."
+echo "HONEST LIMITS: line-not-branch; set+x/traps unaccounted; block terminators,"
+echo "continuation lines of multi-line commands and heredoc fixture bodies count in"
+echo "the denominator but can never appear in a trace -> every figure is a"
+echo "conservative lower bound (measured dominant undercount: SQL heredoc fixtures)."
 [ "$SUITE_RC" -eq 0 ]

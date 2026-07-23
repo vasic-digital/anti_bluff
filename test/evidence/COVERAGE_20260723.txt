@@ -1,0 +1,22 @@
+COVERAGE (bash line-trace LOWER BOUND, §11.4.224(E)) — anti_bluff @ 35167e8 2026-07-23T00:00:14Z
+suite exit under trace: 0 (suite tail: SUITES: total=5 red=0)
+---------------------------------------------------------------
+install.sh                                      16/38   =  42%
+lib/needle.sh                                   53/75   =  70%
+seams/evidence_class/evidence_class_check.sh    30/42   =  71%
+seams/status_custody/ab_sql_lib.sh              16/26   =  61%
+seams/status_custody/apply_custody.sh           55/117  =  47%
+seams/status_custody/custody_sweep.sh           28/54   =  51%
+EXCLUDED (honest gap, §11.4.224(E) fence): test/coverage_report.sh — first-party measurement instrument; runs OUTSIDE the suite it traces, so this run cannot attribute its own lines — self-measurement OWED per README §5 item 6 (§11.4.197)
+test/run_all.sh                                 14/19   =  73%
+test/test_evidence_class.sh                     29/71   =  40%
+test/test_insert_custody.sh                     41/74   =  55%
+test/test_needle.sh                             57/109  =  52%
+test/test_out_of_box.sh                         34/69   =  49%
+test/test_status_custody.sh                     73/136  =  53%
+---------------------------------------------------------------
+TOTAL (measured corpus)                        446/830  =  53%
+Go sources: 0 — 'go test -cover' NOT APPLICABLE in this slice (honest §11.4.3 skip)
+kcov present: no; bashcov: no; bats: no
+HONEST LIMITS: line-not-branch; set+x/traps unaccounted; block terminators
+in denominator but untraceable -> every figure is a conservative lower bound.
